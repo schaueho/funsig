@@ -3,8 +3,18 @@
 
 (defmacro defsig
   "Define a signature, a combination of a function name and parameter list"
-  [name params & {:keys [locator] :or {locator nil}}]
+  [name params]
   `(do
-     (si/add-signature! ~locator '~name '[~@params])
+     (si/add-signature! *locator* '~name '[~@params])
      (defn ~name [~@params]
-       [~@params])))
+       (if-let [implementation# (find-implementation *locator* '~name)]
+         (implementation# ~@params)
+         (throw (Exception. (str "No implementation registered for " '~name)))))))
+
+(defmacro defimpl
+  "Define an implementation for a signature"
+  [name params & forms]
+  `(let [implname# (symbol (str '~name "-impl"))]
+     (defn ~(symbol (str name "-impl")) [~@params]
+       ~@forms)
+     (add-implementation! *locator* '~name '[~@params] ~(symbol (str name "-impl")))))
