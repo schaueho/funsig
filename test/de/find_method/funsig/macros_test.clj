@@ -1,8 +1,8 @@
-(ns de.find-method.sigh.macros-test
+(ns de.find-method.funsig.macros-test
   (:require [com.stuartsierra.component :as component]
             [midje.sweet :refer :all]
-            [de.find-method.sigh.core :as si :refer :all]
-            [de.find-method.sigh.macros :refer :all]))
+            [de.find-method.funsig.core :as si :refer :all]
+            [de.find-method.funsig.macros :refer :all]))
 
 (facts "Defining signatures"
        (fact "After signature definition, a function is defined"

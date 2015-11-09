@@ -1,4 +1,4 @@
-(defproject de.find-method/sigh "0.1.0-SNAPSHOT"
+(defproject de.find-method/funsig "0.1.0-SNAPSHOT"
   :description "Signature dependency inversion and injection for functions"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"

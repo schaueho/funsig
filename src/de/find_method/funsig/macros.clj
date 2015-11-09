@@ -1,5 +1,5 @@
-(ns de.find-method.sigh.macros
-  (:require [de.find-method.sigh.core :as si :refer :all]))
+(ns de.find-method.funsig.macros
+  (:require [de.find-method.funsig.core :as si :refer :all]))
 
 (defmacro defsig
   "Define a signature, a combination of a function name and parameter list"

@@ -1,7 +1,7 @@
-(ns de.find-method.sigh.sigh-test
+(ns de.find-method.funsig.core-test
   (:use midje.sweet)
   (:require [com.stuartsierra.component :as component]
-            [de.find-method.sigh.core :refer :all]))
+            [de.find-method.funsig.core :refer :all]))
 
 ;(declare testfn)
 

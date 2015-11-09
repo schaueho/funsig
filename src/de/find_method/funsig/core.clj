@@ -1,4 +1,4 @@
-(ns de.find-method.sigh.core
+(ns de.find-method.funsig.core
   (:require [com.stuartsierra.component :as component]))
 
 (defprotocol ServiceLocatorProtocol
