@@ -1,5 +1,4 @@
-(ns de.find-method.funsig.core
-  (:require [com.stuartsierra.component :as component]))
+(ns de.find-method.funsig.core)
 
 (defprotocol ServiceLocatorProtocol
   (add-signature! [locator name lambdalist])
@@ -10,13 +9,7 @@
 (declare find-sigimpls matching-lambdalists?)
 
 (defrecord ServiceLocator [services]
-  component/Lifecycle ServiceLocatorProtocol
-
-  (start [locator]
-    (assoc locator :services (atom {})))
-
-  (stop [locator]
-    (assoc locator :services nil))
+  ServiceLocatorProtocol
 
   (add-signature! ;  "Add a signature to the service locator"
     [locator name lambdalist]
@@ -46,11 +39,13 @@
       (when (seq (:implementations sigimpls))
         (first (:implementations sigimpls))))))
 
-(def ^:dynamic *locator* (component/start (->ServiceLocator [])))
-
 (defn- find-sigimpls [locator name]
   "Return lambdalist and implementations for name"
   (find @(:services locator) name))
 
 (defn- matching-lambdalists? [lambdalist1 lambdalist2]
   (= lambdalist1  lambdalist2))
+
+(defn start-new-locator []
+  "Start a new service locator"
+  (->ServiceLocator (atom {})))

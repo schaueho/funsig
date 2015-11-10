@@ -3,17 +3,18 @@
 
 (defmacro defsig
   "Define a signature, a combination of a function name and parameter list"
-  [name params]
+  [locator name params]
+  (let [locator# locator]
   `(do
-     (si/add-signature! *locator* '~name '[~@params])
+     (si/add-signature! ~locator# '~name '[~@params])
      (defn ~name [& varargs#]
-       (if-let [implementation# (find-implementation *locator* '~name)]
+       (if-let [implementation# (find-implementation ~locator# '~name)]
          (apply implementation# varargs#)
-         (throw (Exception. (str "No implementation registered for " '~name)))))))
+         (throw (Exception. (str "No implementation registered for " '~name))))))))
 
 (defmacro defimpl
   "Define an implementation for a signature"
-  [name & sigs]
+  [locator name & sigs]
   (when (not (seq? sigs))
     (throw (Exception. "Implementation definition doesn't have a valid signature")))
   (let [implname# (symbol (str name "-impl"))
@@ -25,6 +26,6 @@
                        (Exception. "Implementation definition doesn't have a valid signature")))]
     (if (list? sigs#) ; variadic or simple function implementation
       `(do (defn ~(symbol (str name "-impl")) ~@sigs)
-           (add-implementation! *locator* '~name '~params# ~(symbol (str name "-impl"))))
+           (add-implementation! ~locator '~name '~params# ~(symbol (str name "-impl"))))
       `(do (defn ~(symbol (str name "-impl")) [~@(first sigs)] ~@(rest sigs))
-           (add-implementation! *locator* '~name '~params# ~(symbol (str name "-impl")))))))
+           (add-implementation! ~locator '~name '~params# ~(symbol (str name "-impl")))))))
