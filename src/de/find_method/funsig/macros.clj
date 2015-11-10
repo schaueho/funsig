@@ -6,15 +6,25 @@
   [name params]
   `(do
      (si/add-signature! *locator* '~name '[~@params])
-     (defn ~name [~@params]
+     (defn ~name [& varargs#]
        (if-let [implementation# (find-implementation *locator* '~name)]
-         (implementation# ~@params)
+         (apply implementation# varargs#)
          (throw (Exception. (str "No implementation registered for " '~name)))))))
 
 (defmacro defimpl
   "Define an implementation for a signature"
-  [name params & forms]
-  `(let [implname# (symbol (str '~name "-impl"))]
-     (defn ~(symbol (str name "-impl")) [~@params]
-       ~@forms)
-     (add-implementation! *locator* '~name '[~@params] ~(symbol (str name "-impl")))))
+  [name & sigs]
+  (when (not (seq? sigs))
+    (throw (Exception. "Implementation definition doesn't have a valid signature")))
+  (let [implname# (symbol (str name "-impl"))
+        sigs# (first sigs)
+        params# (cond (list? sigs#) (mapv first sigs) ; variadic function
+                      (vector? sigs#) sigs#           ; normal [arglist] &forms definition
+                      :else
+                      (throw
+                       (Exception. "Implementation definition doesn't have a valid signature")))]
+    (if (list? sigs#) ; variadic or simple function implementation
+      `(do (defn ~(symbol (str name "-impl")) ~@sigs)
+           (add-implementation! *locator* '~name '~params# ~(symbol (str name "-impl"))))
+      `(do (defn ~(symbol (str name "-impl")) [~@(first sigs)] ~@(rest sigs))
+           (add-implementation! *locator* '~name '~params# ~(symbol (str name "-impl")))))))
