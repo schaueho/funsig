@@ -29,3 +29,11 @@
            (add-implementation! ~locator '~name '~params# ~(symbol (str name "-impl"))))
       `(do (defn ~(symbol (str name "-impl")) [~@(first sigs)] ~@(rest sigs))
            (add-implementation! ~locator '~name '~params# ~(symbol (str name "-impl")))))))
+
+(defmacro set-implementation!
+  "Set an implementation for a signature to be used as default"
+  ; we need this as a macro because otherwise the names (vars) will be
+  ; evaluated to the respective function objects -- which will all be
+  ; unknown in the locator (the locator stores symbols only)
+  [locator name implname]
+  `(set-default-implementation! ~locator '~name ~implname))

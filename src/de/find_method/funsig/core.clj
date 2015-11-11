@@ -4,7 +4,8 @@
   (add-signature! [locator name lambdalist])
   (find-signature [locator name])
   (add-implementation! [locator name lambdalist implname])
-  (find-implementation [locator name]))
+  (find-implementation [locator name])
+  (set-default-implementation! [locator name implname]))
 
 (declare find-sigimpls matching-lambdalists?)
 
@@ -37,7 +38,19 @@
     [locator name]
     (when-let [[name sigimpls] (find-sigimpls locator name)]
       (when (seq (:implementations sigimpls))
-        (first (:implementations sigimpls))))))
+        (if-let [default-impl (:default-impl sigimpls)]
+          (some #{default-impl} (:implementations sigimpls))
+          (first (:implementations sigimpls))))))
+
+  (set-default-implementation! ; "Sets a default implementation for a signature"
+    [locator name implname]
+    (let [sigimpls (find-sigimpls locator name)]
+      (when (or (not (vector? sigimpls))
+                (not (some #{implname}
+                           (:implementations (second sigimpls)))))
+        (throw (Exception. (str implname " is not a known implementation for " name))))
+      (swap! (:services locator)
+             assoc-in [name :default-impl] implname))))
 
 (defn- find-sigimpls [locator name]
   "Return lambdalist and implementations for name"

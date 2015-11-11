@@ -13,3 +13,8 @@
   "Define an implementation for a signature"
   [name & sigs]
   `(macros/defimpl *locator* ~name ~@sigs))
+
+(defmacro set-default-implementation!
+  "Set a default implementation for a signature with multiple implementations"
+  [name implname]
+  `(macros/set-implementation! *locator* ~name ~implname))

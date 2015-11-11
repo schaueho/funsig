@@ -48,13 +48,31 @@ You also need to supply an implementation with `defimpl`:
 		(println string))
 ```
 
-Note that the implementation has a dependency on the signature, not the other way around -- your application code (`print-account-multiplied`) simply depends on the signature.
+Note that the implementation has a dependency on the signature, not the other way around -- your application code (`print-account-multiplied`) simply depends on the signature. Obviously, you need to load (require) the code defining the implementation somewhere -- if you get an error calling `print-account-multiplied` telling you there is no implementation for `printer`, this tells you that you never loaded `my.onion.printer`.
 
 An important thing to know is that the parameter list of the signature and the implementation need to agree -- currently, _agreement_ means equality, not compatibility. Hence, both signature and implementation have the exact same parameter list `[string]`.
 
 Argument destructuring and variadic function (implementations) are supported, but again, note that the argument list need to be _equal_ currently.
 
-### Using different implementations in tests
+### Handling multiple implementations of a signature
+
+If you have multiple implementations for a signature in different namespaces, you should explicitly declare which implementation you want, otherwise the load order of the modules will determine which default implementation you get (the `defimpl` loaded last will win). You can do this with `set-default-implementation!` which expects the name of the signature and the name of the implementation -- the latter consists of the name of the signature plus '-impl':
+
+```clojure
+	(ns my.onion.app
+		(:require [de.find-method.funsig :as di :refer [set-default-implementation!]]
+			      [my.onion.printersig :refer [printer]]
+				  [my.onion.printerimpl2 :as impl2 :refer [printer-impl]]))
+
+	(set-default-implementation! printer impl2/printer-impl)
+```
+
+Using a namespace prefix in front of the implementation function is good practice here.
+
+You can use this feature to easily supply a different implementation in tests.
+
+
+### Using clean slate in tests
 
 Funsig is nothing more but a small set of macros plus a ServiceLocator record. If you just want to test a pair of signature and implementation without polluting the global service locator, simply bind `de.find-method.funsig/*locator*` to a freshly started locator (started via `start-new-locator`) like this:
 
@@ -75,10 +93,6 @@ Funsig is nothing more but a small set of macros plus a ServiceLocator record. I
 Note that with a new *locator* binding, you need to call both `defsig` and `defimpl`.
 
 
-### Handling multiple implementations of a signature
-
-- remains to be implemented
-- alternatively add test implementation and assign it as default implementation in tests
 
 ### Integration with Stuart Sierra's component library
 
