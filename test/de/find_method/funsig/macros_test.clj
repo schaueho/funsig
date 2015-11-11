@@ -9,6 +9,9 @@
                (do (defsig locator fetch-foo [foo bar])
                    (and (bound? #'fetch-foo)
                         (fn? fetch-foo))) => true)
+         (fact "Add documentation per  signature definition, a function is defined"
+               (do (defsig locator fetch-foo "Fetch foo" [foo bar])
+                   (:doc (meta #'fetch-foo))) => "Fetch foo")
          (fact "Calling a signature that doesn't have an implementation will throw an exception"
                (do (defsig locator fetch-foo [foo bar])
                    (fetch-foo 1 2) => (throws Exception "No implementation registered for fetch-foo")))))
@@ -26,7 +29,7 @@
                (do (defsig locator fetch-foo [foo bar baz])
                    (defimpl locator fetch-foo [foo bar] [foo bar]))
                => (throws Exception
-                          "Lambda lists for fetch-foo don't match: [foo bar baz]!=[foo bar]"))
+                          "Lambda lists for fetch-foo don't match: ([foo bar baz])!=([foo bar])"))
          (fact "Invoking an implementation for a signature by calling the signature works"
                (do (defsig locator fetch-foo [foo bar])
                    (defimpl locator fetch-foo [foo bar] [foo bar])
