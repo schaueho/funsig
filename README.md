@@ -56,7 +56,7 @@ Argument destructuring and variadic function (implementations) are supported, bu
 
 ### Handling multiple implementations of a signature
 
-If you have multiple implementations for a signature in different namespaces, you should explicitly declare which implementation you want, otherwise the load order of the modules will determine which default implementation you get (the `defimpl` loaded last will win). You can do this with `set-default-implementation!` which expects the name of the signature and the name of the implementation -- the latter consists of the name of the signature plus '-impl':
+If you have multiple implementations for a signature in different namespaces, you should explicitly declare which implementation you want, otherwise the load order of the modules will determine which default implementation you get (the `defimpl` loaded last will win). You can do this with `set-default-implementation!` which expects the name of the signature and the name of the implementation -- the latter consists of the name of the signature plus `-impl`:
 
 ```clojure
 	(ns my.onion.app
@@ -69,16 +69,18 @@ If you have multiple implementations for a signature in different namespaces, yo
 
 Using a namespace prefix in front of the implementation function is good practice here.
 
-You can use this feature to easily supply a different implementation in tests.
+You could use this feature to easily supply a different implementation in tests, e.g. for mock purposes. 
 
 
 ### Using clean slate in tests
+
+Funsig holds state information about signatures and implementations. Adding a new (mock) implementation for a signature can lead to pollution of the state that you might want to avoid in your tests.
 
 Funsig is nothing more but a small set of macros plus a ServiceLocator record. If you just want to test a pair of signature and implementation without polluting the global service locator, simply bind `de.find-method.funsig/*locator*` to a freshly started locator (started via `start-new-locator`) like this:
 
 ```clojure
 
-	(ns my.onion.fetchsig
+	(ns my.onion.fetchsig-test
 		(:use midje.sweet)
 		(:require [de.find.method.funsig :as di :refer [defsig defimpl *locator*]]
 			      [de.find.method.funsig.core :as dicore :refer [start-new-locator]]))
@@ -90,8 +92,7 @@ Funsig is nothing more but a small set of macros plus a ServiceLocator record. I
 					(fetch-foo 1 2)) => [1 2]))
 ```
 
-Note that with a new *locator* binding, you need to call both `defsig` and `defimpl`.
-
+Note that with a new `*locator*` binding, you need to call both `defsig` and `defimpl`.
 
 
 ### Integration with Stuart Sierra's component library
@@ -108,7 +109,7 @@ However, this is simply a conveniance provided from the top-level `funsig.clj` m
 	(defrecord MyComponent [locator etc]
 	    component/Lifecycle
 	    (start [mycomponent]
-		       (assoc mycompoent :locator (start-new-locator)))
+		       (assoc mycomponent :locator (start-new-locator)))
 
 	    (stop [mycomponent]
               (dissoc mycomponent :locator)))
@@ -133,7 +134,9 @@ This defines the component. You would then use this locator when defining signat
 
 ### Todo
 
-- Handle multiple implementations in a sane way.
+- Signatures should be added and searched for with namespace.
+- Provide an example with docstring and metadata.
+
 
 
 ## License
