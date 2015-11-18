@@ -134,9 +134,7 @@ This defines the component. You would then use this locator when defining signat
 
 ### Todo
 
-- Signatures should be added and searched for with namespace.
 - Provide an example with docstring and metadata.
-
 
 
 ## License

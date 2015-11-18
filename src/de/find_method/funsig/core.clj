@@ -27,7 +27,6 @@
     [locator name lambdalist implname]
     (if-let [[name sigimpls] (find-sigimpls locator name)]
       (if (matching-lambdalists? (:lambdalist sigimpls) lambdalist)
-        ; TODO: handle multiple implementations correctly
         (swap! (:services locator)
                update-in [name :implementations] conj implname)
         (throw (Exception. (str "Lambda lists for " name " don't match: "
