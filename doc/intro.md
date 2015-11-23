@@ -80,7 +80,16 @@ Here's the implementation:
 		(println string))
 ```
 
-Note that the implementation has a dependency on the signature, not the other way around. Also, your application code (`print-account-multiplied`) simply depends on the signature -- here the signature is in the same file, but reference to the var in another namespace (i.e. using `require\:refer`) also works normally.
+Note that the implementation has a dependency on the signature, not the other way around. Also, your application code (`print-account-multiplied`) simply depends on the signature -- here the signature is in the same file, but reference to the var in another namespace (i.e. using `require\:refer`) also works normally, as in this demo taken from funsigs tests:
+
+```clojure
+
+	(ns de.find-method.testimpl3
+		(:require [de.find-method.funsig :as di :refer [defimpl]]
+			      [de.find-method.testsigs :as testsig :refer [fetch-multiple]]))
+
+	(defimpl testsig/fetch-multiple [foo] 'foo3)
+```
 
 Somewhere, you also need to `load` the code for the implementation (typically via `require`). If you consider an application, this could happen in your typical `core.clj` file or whereever you handle the application configuration and/or startup.
 
@@ -99,6 +108,23 @@ When multiple implementations are provided, you want to set a default implementa
 `set-default-implementation!` expects the signature name and the implementation name which consists of the signature name plus `-impl`.
 
 The separation of concerns between definition of the abstraction (the signature) and the implementation allows to break dependencies between modules and functions. Any application code depending on the signature doesn't need to know which implementation is used.
+
+An important thing to know is that the parameter list of the signature and the implementation need to agree -- currently, _agreement_ means equality, not compatibility. Hence, both signature and implementation have the exact same parameter list `[string]`.
+
+Argument destructuring and variadic function (implementations) are supported, but again, note that the argument lists need to be _equal_ currently. You can also provide docstrings and an argument map that will be added as meta-data as per `defn`.
+
+```clojure
+
+	(defsig another-sig "Expects one or two arguments" ([] [arg1]))
+
+    (defimpl another-sig
+		([]
+			(println "No argument received"))
+		([arg1]
+			(println "One argument received")
+			arg1))
+```
+
 
 ## Implementation overview
 
@@ -138,3 +164,43 @@ In other words, when you call the top-level `defsig` and `defimpl`, you are oper
 ```
 
 This can also be put to good use in tests to provide mock implementations, but be aware that a fresh locator obviously will not know about any signatures.
+
+
+## Integration with Stuart Sierra's component library
+
+Funsig as a library is largely compatible with Stuart Sierra's [component library](https://github.com/stuartsierra/component) if used with a twist. Which is just another way of saying that, basically, funsig breaks Stuart's recommendations ([notes for library authors](https://github.com/stuartsierra/component#notes-for-library-authors)) in almost every way if used as discussed above: it relies on dynamic binding to convey state and it performs side-effects at the top of a file.
+
+However, this is simply a conveniance provided from the top-level `funsig.clj` module. Instead you can simply call `start-new-locator` from `de.find-method.funsig.core` and hand over the resulting locator to the macros `defsig` and `defimpl` from `de.find-method.funsig.macros`. So, just use the following requirements instead, when using this library as a component:
+
+```clojure
+
+    (ns my.onion.mycomponent
+  		(:require [de.find.method.funsig.macros :as di :refer [defsig defimpl]]
+			      [de.find.method.funsig.core :as dicore :refer [start-new-locator]]))
+
+	(defrecord MyComponent [locator etc]
+	    component/Lifecycle
+	    (start [mycomponent]
+		       (assoc mycomponent :locator (start-new-locator)))
+
+	    (stop [mycomponent]
+              (dissoc mycomponent :locator)))
+```
+
+This defines the component. You would then use this locator when defining signatures and implementations (here simply assuming you have a global var `locator` holding a reference to your service locator component, in practice you'll want another indirection that uses the locator from a system configuration): 
+
+```clojure
+
+    (ns my.onion.appcode
+		(:require [de.find.method.funsig.macros :as di :refer [defsig]]))
+
+
+    ;;;... application code using the macros directly ...
+	(defsig locator fetch-foo [foo bar])
+
+    (ns my.onion.fetch-impl
+		(:require [de.find.method.funsig.macros :as di :refer [defimpl]]))
+
+	(defimpl locator fetch-foo [foo bar] [foo bar]
+		(fetch-foo 1 2))
+```
