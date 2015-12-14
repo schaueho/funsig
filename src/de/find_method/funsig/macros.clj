@@ -27,14 +27,16 @@
      (defn ~signame ~(assoc m :arglists `'~@params) [& varargs#]
        (if-let [implementation# (find-implementation ~locator# '~nsname)]
          (apply (resolve implementation#) varargs#)
-         (throw (Exception. (str "No implementation registered for " '~nsname))))))))
+         (throw (ex-info (str "No implementation registered for " '~nsname)
+                         {:signature '~nsname})))))))
 
 (defmacro defimpl
   "Define an implementation for a signature"
   [locator signame & sigs]
   (when (not (seq? sigs))
-    (throw (Exception. (str "Implementation definition for "
-                            signame " doesn't have a valid signature"))))
+    (throw (ex-info (str "Implementation definition for "
+                         signame " doesn't have a valid signature")
+                    {:signature signame})))
 
   (let [sigvar# (resolve signame)
         nsname# (when sigvar#
@@ -50,10 +52,11 @@
                       (vector? sigs#) (list sigs#)   ; normal [arglist] &forms definition
                       :else
                       (throw
-                       (Exception. (str
-                                    "Implementation definition for "
-                                    nsname#
-                                    " doesn't have a valid signature"))))]
+                       (ex-info (str
+                                 "Implementation definition for "
+                                 nsname#
+                                 " doesn't have a valid signature")
+                                {:signature nsname#})))]
     (if (list? sigs#) ; variadic or simple function implementation
       `(do (defn ~implname# ~@sigs)
            (add-implementation! ~locator '~nsname# '~params# '~implnsname#))
