@@ -29,9 +29,13 @@
       (if (matching-lambdalists? (:lambdalist sigimpls) lambdalist)
         (swap! (:services locator)
                update-in [name :implementations] conj implname)
-        (throw (Exception. (str "Lambda lists for " name " don't match: "
-                                (:lambdalist sigimpls) "!=" lambdalist))))
-      (throw (Exception. (str "No signature registered for " name)))))
+        (throw (ex-info (str "Lambda lists for " name " don't match: "
+                             (:lambdalist sigimpls) "!=" lambdalist)
+                        {:signature name
+                         :lambda-sig sigimpls
+                         :lambda-impl lambdalist})))
+      (throw (ex-info (str "No signature registered for " name)
+                      {:signature name}))))
 
   (find-implementation ; "Finds the implementation for a name"
     [locator name]
@@ -47,7 +51,9 @@
       (when (or (not (vector? sigimpls))
                 (not (some #{implname}
                            (:implementations (second sigimpls)))))
-        (throw (Exception. (str implname " is not a known implementation for " name))))
+        (throw (ex-info (str implname " is not a known implementation for " name)
+                        {:signature name
+                         :known-implementations (second sigimpls)})))
       (swap! (:services locator)
              assoc-in [name :default-impl] implname))))
 
