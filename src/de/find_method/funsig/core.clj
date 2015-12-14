@@ -1,29 +1,39 @@
 (ns de.find-method.funsig.core)
 
 (defprotocol ServiceLocatorProtocol
-  (add-signature! [locator name lambdalist])
-  (find-signature [locator name])
-  (add-implementation! [locator name lambdalist implname])
-  (find-implementation [locator name])
-  (set-default-implementation! [locator name implname]))
+  (add-signature!
+    [locator name lambdalist]
+    "Add a signature to the service locator")
+  (find-signature
+    [locator name]
+    "Finds the signature for a name")
+  (add-implementation!
+    [locator name lambdalist implname]
+    "Add an implementation to the service locator")
+  (find-implementation
+    [locator name]
+    "Finds the implementation for a name")
+  (set-default-implementation!
+    [locator name implname]
+    "Sets a default implementation for a signature"))
 
 (declare find-sigimpls matching-lambdalists?)
 
 (defrecord ServiceLocator [services]
   ServiceLocatorProtocol
 
-  (add-signature! ;  "Add a signature to the service locator"
+  (add-signature!
     [locator name lambdalist]
     (swap! (:services locator) assoc name {:lambdalist lambdalist
                                            :implementations nil
                                            :default-impl nil}))
 
-  (find-signature ; "Finds the signature for a name"
+  (find-signature
     [locator name]
     (when-let [[name sigimpls] (find-sigimpls locator name)]
       (:lambdalist sigimpls)))
 
-  (add-implementation! ; "Add an implementation to the service locator"
+  (add-implementation!
     [locator name lambdalist implname]
     (if-let [[name sigimpls] (find-sigimpls locator name)]
       (if (matching-lambdalists? (:lambdalist sigimpls) lambdalist)
@@ -37,20 +47,20 @@
       (throw (ex-info (str "No signature registered for " name)
                       {:signature name}))))
 
-  (find-implementation ; "Finds the implementation for a name"
+  (find-implementation
     [locator name]
     (when-let [[name sigimpls] (find-sigimpls locator name)]
       (when (seq (:implementations sigimpls))
         (if-let [default-impl (:default-impl sigimpls)]
-          (some #{default-impl} (:implementations sigimpls))
+          (some (hash-set default-impl) (:implementations sigimpls))
           (first (:implementations sigimpls))))))
 
-  (set-default-implementation! ; "Sets a default implementation for a signature"
+  (set-default-implementation!
     [locator name implname]
     (let [sigimpls (find-sigimpls locator name)]
       (when (or (not (vector? sigimpls))
-                (not (some #{implname}
-                           (:implementations (second sigimpls)))))
+                (not-any? (hash-set implname)
+                           (:implementations (second sigimpls))))
         (throw (ex-info (str implname " is not a known implementation for " name)
                         {:signature name
                          :known-implementations (second sigimpls)})))
@@ -66,4 +76,4 @@
 
 (defn start-new-locator []
   "Start a new service locator"
-  (->ServiceLocator (atom {})))
+  (map->ServiceLocator {:services (atom {})}))
