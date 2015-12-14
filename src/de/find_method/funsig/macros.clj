@@ -33,7 +33,7 @@
 (defmacro defimpl
   "Define an implementation for a signature"
   [locator signame & sigs]
-  (when (not (seq? sigs))
+  (when-not (seq? sigs)
     (throw (ex-info (str "Implementation definition for "
                          signame " doesn't have a valid signature")
                     {:signature signame})))
