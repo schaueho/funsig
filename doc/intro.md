@@ -9,7 +9,7 @@
 
 Many current architecture recommendations rely on these rules extensively, most notably Bob Martins's [clean architecture](https://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html), which is next to identical to the Jeffrey Palermo's [onion architecture](http://jeffreypalermo.com/blog/the-onion-architecture-part-1/).
 
-There are many ways to handle [dependency inversion in Clojure](http://blog.find-method.de/index.php?/archives/209-Dependency-inversion-in-Clojure.html): some are built-in like [protocols] or [multimethods], some use libraries like Stuart Sierra's [component library](https://github.com/stuartsierra/component). The funsig library doesn't want to overcome these, but instead seeks to complement them.
+There are many ways to handle [dependency inversion in Clojure](http://blog.find-method.de/index.php?/archives/209-Dependency-inversion-in-Clojure.html): some are built-in like [protocols](http://http://clojure.org/protocols) or [multimethods](http://http://clojure.org/multimethods), some use libraries like Stuart Sierra's [component library](https://github.com/stuartsierra/component). The funsig library doesn't want to overcome these, but instead seeks to complement them.
 
 Protocols are a great solution if the following two assumptions are true:
 
