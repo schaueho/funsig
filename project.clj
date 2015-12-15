@@ -1,4 +1,4 @@
-(defproject de.find-method/funsig "0.1.1"
+(defproject de.find-method/funsig "0.1.2"
   :description "Signature dependency inversion and injection for functions"
   :url "http://github.com/schaueho/funsig"
   :license {:name "Eclipse Public License"
