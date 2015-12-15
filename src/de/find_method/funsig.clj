@@ -6,8 +6,8 @@
 
 (defmacro defsig
   "Define a signature, a combination of a function name and parameter list"
-  [name params]
-  `(macros/defsig *locator* ~name ~params))
+  [name & params]
+  `(macros/defsig *locator* ~name ~@params))
 
 (defmacro defimpl
   "Define an implementation for a signature"

@@ -6,6 +6,11 @@
             [de.find-method.testimpl3 :as impl3]
             [midje.sweet :refer :all]))
 
+(fact "Lifting base macros to top-level"
+      (fact "Docstrings work"
+       (do (defsig fetch-bar "Fetch foo" [foo bar])
+           (:doc (meta #'fetch-bar))) => "Fetch foo"))
+
 (fact "Variadic signatures also work"
       (do (defsig fetch-foo ([] [foo] [foo bar]))
           (defimpl fetch-foo ([] 'foo) ([foo] foo) ([foo bar] [foo bar]))
