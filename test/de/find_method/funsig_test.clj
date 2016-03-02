@@ -1,7 +1,7 @@
 (ns de.find-method.funsig-test
   (:require [de.find-method.funsig :as di :refer :all]
             [de.find-method.testsigs :as testsig :refer [fetch-multiple]]
-            [de.find-method.testimpl1 :as impl1 :refer [fetch-multiple-impl]]
+            [de.find-method.testimpl1 :as impl1]
             [de.find-method.testimpl2 :as impl2]
             [de.find-method.testimpl3 :as impl3]
             [midje.sweet :refer :all]))
@@ -26,4 +26,7 @@
                 (testsig/fetch-multiple 2) => 'foo1))
       (fact "I can use namespaces and aliases, too"
             (do (set-default-implementation! fetch-multiple impl3/fetch-multiple-impl)
-                (de.find-method.testsigs/fetch-multiple 2)) => 'foo3))
+                (de.find-method.testsigs/fetch-multiple 2)) => 'foo3)
+      (fact "We can use metadata to set the default implementation"
+            (do (defimpl fetch-multiple {:primary true} [foo] 'foo4)
+                (testsig/fetch-multiple 3) => 'foo4)))

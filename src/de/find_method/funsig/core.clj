@@ -8,7 +8,7 @@
     [locator name]
     "Finds the signature for a name")
   (add-implementation!
-    [locator name lambdalist implname]
+    [locator name metamap lambdalist implname]
     "Add an implementation to the service locator")
   (find-implementation
     [locator name]
@@ -34,11 +34,13 @@
       (:lambdalist sigimpls)))
 
   (add-implementation!
-    [locator name lambdalist implname]
+    [locator name metamap lambdalist implname]
     (if-let [[name sigimpls] (find-sigimpls locator name)]
       (if (matching-lambdalists? (:lambdalist sigimpls) lambdalist)
-        (swap! (:services locator)
-               update-in [name :implementations] conj implname)
+        (do (swap! (:services locator)
+                   update-in [name :implementations] conj implname)
+            (when (:primary metamap)
+               (set-default-implementation! locator name implname)))
         (throw (ex-info (str "Lambda lists for " name " don't match: "
                              (:lambdalist sigimpls) "!=" lambdalist)
                         {:signature name
