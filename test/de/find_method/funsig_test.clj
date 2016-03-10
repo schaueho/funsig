@@ -28,5 +28,21 @@
             (do (set-default-implementation! fetch-multiple impl3/fetch-multiple-impl)
                 (de.find-method.testsigs/fetch-multiple 2)) => 'foo3)
       (fact "We can use metadata to set the default implementation"
-            (do (defimpl fetch-multiple {:primary true} [foo] 'foo4)
-                (testsig/fetch-multiple 3) => 'foo4)))
+            (do (defimpl fetch-multiple {:primary true :impl 4} [foo] 'foo4)
+                (testsig/fetch-multiple 3) => 'foo4))
+      (fact "We can use metadata to set the default implementation"
+            (do (defimpl ^{:whatever true} fetch-multiple [foo] 'foo5)
+                (-> #'de.find-method.funsig-test/fetch-multiple-impl
+                    meta
+                    :whatever) => true))
+      (fact "We can use metadata to set the default implementation"
+            (do (defimpl ^{:primary true :impl 6} fetch-multiple [foo] 'foo6)
+                (testsig/fetch-multiple 5) => 'foo6
+                (-> (find @(:services di/*locator*) 'de.find-method.testsigs/fetch-multiple)
+                    second
+                    :default-impl) => 'de.find-method.funsig-test/fetch-multiple-impl
+                (-> #'de.find-method.funsig-test/fetch-multiple-impl
+                    meta
+                    :impl) => 6)))
+
+            
