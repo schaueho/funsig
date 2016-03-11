@@ -65,7 +65,31 @@ Argument destructuring and variadic function (implementations) are supported, bu
 
 ### Handling multiple implementations of a signature
 
-If you have multiple implementations for a signature in different namespaces, you should explicitly declare which implementation you want, otherwise the load order of the modules will determine which default implementation you get (the `defimpl` loaded last will win). You can do this with `set-default-implementation!` which expects the name of the signature and the name of the implementation -- the latter consists of the name of the signature plus `-impl`:
+If you have multiple implementations for a signature in different namespaces, you should explicitly declare which implementation you want, otherwise the load order of the modules will determine which default implementation you get (the `defimpl` loaded last will win). You can determine a default implementation by setting the `:primary` key as meta data on the implementation:
+
+```clojure
+
+	(ns my.onion.fancy-printer
+		(:require [de.find.method.funsig :as di :refer [defimpl]]
+			      [my.onion :as mo :refer [printer]]))
+
+	(defimpl ^:primary printer [string]
+		(println "Fancy print" string))
+```
+
+Alternatively, if you don't want to specify the default implementation with the definition itself, you can set a default implementation via `set-default-implementation!`, like so:
+
+```clojure
+
+	(ns my.onion.app
+		(:require [de.find-method.funsig :as di :refer [set-default-implementation!]]
+			      [my.onion.printersig :refer [printer]]
+				  [my.onion.fancy-printer :refer [printer-impl]]))
+
+	(set-default-implementation! printer printer-impl)
+```
+
+You can do this with `set-default-implementation!` which expects the name of the signature and the name of the implementation -- the latter consists of the name of the signature plus `-impl`:
 
 ```clojure
 

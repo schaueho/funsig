@@ -93,7 +93,19 @@ Note that the implementation has a dependency on the signature, not the other wa
 
 Somewhere, you also need to `load` the code for the implementation (typically via `require`). If you consider an application, this could happen in your typical `core.clj` file or whereever you handle the application configuration and/or startup.
 
-When multiple implementations are provided, you want to set a default implementation via `set-default-implementation!`, otherwise the last implementation being defined will be used. 
+When multiple implementations are provided, you can determine a default implementation by setting the `:primary` key as meta data on the implementation, otherwise the last implementation being defined (loaded) will be used.
+
+```clojure
+
+	(ns my.onion.fancy-printer
+		(:require [de.find.method.funsig :as di :refer [defimpl]]
+			      [my.onion :as mo :refer [printer]]))
+
+	(defimpl ^:primary printer [string]
+		(println "Fancy print" string))
+```
+
+Alternatively, if you don't want to specify the default implementation with the definition itself, you can set a default implementation via `set-default-implementation!`, like so:
 
 ```clojure
 
